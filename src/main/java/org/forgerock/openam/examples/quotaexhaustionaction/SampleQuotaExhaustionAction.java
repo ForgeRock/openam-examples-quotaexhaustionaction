@@ -24,6 +24,11 @@ import com.iplanet.dpro.session.service.SessionService;
 import com.sun.identity.shared.debug.Debug;
 import java.util.Map;
 
+/**
+ * This is a sample {@link QuotaExhaustionAction} implementation, which just randomly kills the first session it finds.
+ *
+ * @author Peter Major
+ */
 public class SampleQuotaExhaustionAction implements QuotaExhaustionAction {
 
     private static Debug debug = SessionService.sessionDebug;
@@ -33,24 +38,25 @@ public class SampleQuotaExhaustionAction implements QuotaExhaustionAction {
      * perform necessary actions in such as case.
      *
      * @param is the to-be-actived InternalSession
-     * @param existingSessions all existing sessions belonging to the same uuid
-     *          (Map:sid-&gt;expiration_time)
-     * @return true if the session activation request should be rejected, false
-     *         otherwise
+     * @param existingSessions all existing sessions belonging to the same uuid (Map:sid-&gt;expiration_time)
+     * @return true if the session activation request should be rejected, false otherwise
      */
+    @Override
     public boolean action(InternalSession is, Map<String, Long> existingSessions) {
         //kills the first session it finds randomly :)
         for (Map.Entry<String, Long> entry : existingSessions.entrySet()) {
             try {
+                //getting an actual Session instance based on the session id
                 Session session = Session.getSession(new SessionID(entry.getKey()));
+                //we use the session to destroy itself.
                 session.destroySession(session);
+                //we only want to destroy one session, remember?
                 break;
             } catch (SessionException se) {
                 if (debug.messageEnabled()) {
                     debug.message("Failed to destroy the next expiring session.", se);
                 }
-                // deny the session activation request
-                // in this case
+                //deny the session activation request in this case
                 return true;
             }
         }
