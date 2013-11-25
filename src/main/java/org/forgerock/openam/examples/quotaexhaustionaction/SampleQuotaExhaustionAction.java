@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 ForgeRock, Inc.
+ * Copyright 2012-2013 ForgeRock, Inc.
  *
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance with the
@@ -25,9 +25,8 @@ import com.sun.identity.shared.debug.Debug;
 import java.util.Map;
 
 /**
- * This is a sample {@link QuotaExhaustionAction} implementation, which just randomly kills the first session it finds.
- *
- * @author Peter Major
+ * This is a sample {@link QuotaExhaustionAction} implementation,
+ * which randomly kills the first session it finds.
  */
 public class SampleQuotaExhaustionAction implements QuotaExhaustionAction {
 
@@ -35,28 +34,33 @@ public class SampleQuotaExhaustionAction implements QuotaExhaustionAction {
 
     /**
      * Check if the session quota for a given user has been exhausted and
-     * perform necessary actions in such as case.
+     * if so perform the necessary actions. This implementation randomly
+     * destroys the first session it finds.
      *
-     * @param is the to-be-actived InternalSession
-     * @param existingSessions all existing sessions belonging to the same uuid (Map:sid-&gt;expiration_time)
-     * @return true if the session activation request should be rejected, false otherwise
+     * @param is               The InternalSession to be activated.
+     * @param existingSessions All existing sessions that belong to the same
+     *                         uuid (Map:sid-&gt;expiration_time).
+     * @return true If the session activation request should be rejected,
+     *              otherwise false.
      */
     @Override
-    public boolean action(InternalSession is, Map<String, Long> existingSessions) {
-        //kills the first session it finds randomly :)
+    public boolean action(
+            InternalSession is,
+            Map<String, Long> existingSessions) {
         for (Map.Entry<String, Long> entry : existingSessions.entrySet()) {
             try {
-                //getting an actual Session instance based on the session id
-                Session session = Session.getSession(new SessionID(entry.getKey()));
-                //we use the session to destroy itself.
+                // Get an actual Session instance based on the session ID.
+                Session session =
+                        Session.getSession(new SessionID(entry.getKey()));
+                // Use the session to destroy itself.
                 session.destroySession(session);
-                //we only want to destroy one session, remember?
+                // Only destroy the first session.
                 break;
             } catch (SessionException se) {
                 if (debug.messageEnabled()) {
-                    debug.message("Failed to destroy the next expiring session.", se);
+                    debug.message("Failed to destroy existing session.", se);
                 }
-                //deny the session activation request in this case
+                // In this case, deny the session activation request.
                 return true;
             }
         }
