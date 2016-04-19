@@ -1,5 +1,10 @@
 # Quota Exhaustion Action example project
 
+## Warning
+**This code is not supported by ForgeRock and it is your responsibility to verify that the software is suitable and safe for use.**
+
+## About
+
 This example implementation shows how to simply implement a quota exhaustion action
 
 ## How to install this module
